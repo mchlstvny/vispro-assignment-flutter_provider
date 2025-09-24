@@ -4,6 +4,10 @@ import 'package:global_state/global_state.dart';
 import 'package:global_state/counter_model.dart';
 import 'package:uuid/uuid.dart';
 
+/// The starting point of the app.
+///
+/// Wraps the whole app in a [ChangeNotifierProvider] so that
+/// all widgets can access and update the shared [GlobalState].
 void main() {
   runApp(
     ChangeNotifierProvider<GlobalState>(
@@ -13,6 +17,10 @@ void main() {
   );
 }
 
+/// The main app widget.
+///
+/// Sets up the title, theme, and the first screen of the app,
+/// which is [CounterListPage].
 class MyGlobalCounterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -24,47 +32,56 @@ class MyGlobalCounterApp extends StatelessWidget {
   }
 }
 
+/// The page that shows all counters in a list.
+///
+/// This widget reads from the [GlobalState] and displays:
+/// - A list of counters (each with label, value, and color)
+/// - Buttons to edit, change color, increment, decrement, or delete a counter
+/// - A floating action button to add new counters
+///
+/// The list is reorderable so counters can be rearranged by the user.
 class CounterListPage extends StatelessWidget {
   final _uuid = Uuid();
 
   @override
   Widget build(BuildContext context) {
+    // Get access to the global state object provided at the root
     final global = Provider.of<GlobalState>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Global Counters")),
+      appBar: AppBar(title: const Text("Global Counters")),
       body: ReorderableListView(
         onReorder: global.reorder,
         children: [
           for (final counter in global.counters)
             AnimatedContainer(
               key: ValueKey(counter.id),
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               color: counter.color.withOpacity(0.2),
               child: ListTile(
                 title: Text(counter.label),
                 subtitle: AnimatedSwitcher(
-                  duration: Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 300),
                   transitionBuilder: (child, animation) =>
                       ScaleTransition(scale: animation, child: child),
                   child: Text(
                     '${counter.value}',
                     key: ValueKey(counter.value),
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Edit label
                     IconButton(
-                      icon: Icon(Icons.edit),
+                      icon: const Icon(Icons.edit),
                       onPressed: () {
-                        final controller = TextEditingController(text: counter.label);
+                        final controller =
+                            TextEditingController(text: counter.label);
                         showDialog(
                           context: context,
                           builder: (_) => AlertDialog(
-                            title: Text("Edit Label"),
+                            title: const Text("Edit Label"),
                             content: TextField(controller: controller),
                             actions: [
                               TextButton(
@@ -72,17 +89,17 @@ class CounterListPage extends StatelessWidget {
                                   global.updateLabel(counter.id, controller.text);
                                   Navigator.pop(context);
                                 },
-                                child: Text("Save"),
+                                child: const Text("Save"),
                               ),
                             ],
                           ),
                         );
                       },
                     ),
-                    // Change color
                     PopupMenuButton<Color>(
-                      icon: Icon(Icons.color_lens),
-                      onSelected: (color) => global.updateColor(counter.id, color),
+                      icon: const Icon(Icons.color_lens),
+                      onSelected: (color) =>
+                          global.updateColor(counter.id, color),
                       itemBuilder: (_) => Colors.primaries
                           .map((c) => PopupMenuItem(
                                 value: c,
@@ -94,19 +111,16 @@ class CounterListPage extends StatelessWidget {
                               ))
                           .toList(),
                     ),
-                    // Decrement
                     IconButton(
-                      icon: Icon(Icons.remove),
+                      icon: const Icon(Icons.remove),
                       onPressed: () => global.decrement(counter.id),
                     ),
-                    // Increment
                     IconButton(
-                      icon: Icon(Icons.add),
+                      icon: const Icon(Icons.add),
                       onPressed: () => global.increment(counter.id),
                     ),
-                    // Delete
                     IconButton(
-                      icon: Icon(Icons.delete),
+                      icon: const Icon(Icons.delete),
                       onPressed: () => global.removeCounter(counter.id),
                     ),
                   ],
@@ -121,11 +135,12 @@ class CounterListPage extends StatelessWidget {
             CounterModel(
               id: _uuid.v4(),
               label: "Counter ${global.counters.length + 1}",
-              color: Colors.primaries[global.counters.length % Colors.primaries.length],
+              color: Colors.primaries[
+                  global.counters.length % Colors.primaries.length],
             ),
           );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
