@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
+    ChangeNotifierProvider<GlobalState>(
       create: (_) => GlobalState(),
       child: MyGlobalCounterApp(),
     ),
@@ -33,29 +33,84 @@ class CounterListPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text("Global Counters")),
-      body: ListView(
+      body: ReorderableListView(
+        onReorder: global.reorder,
         children: [
           for (final counter in global.counters)
-            ListTile(
+            AnimatedContainer(
               key: ValueKey(counter.id),
-              title: Text(counter.label),
-              subtitle: Text('${counter.value}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () => global.decrement(counter.id),
+              duration: Duration(milliseconds: 300),
+              color: counter.color.withOpacity(0.2),
+              child: ListTile(
+                title: Text(counter.label),
+                subtitle: AnimatedSwitcher(
+                  duration: Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) =>
+                      ScaleTransition(scale: animation, child: child),
+                  child: Text(
+                    '${counter.value}',
+                    key: ValueKey(counter.value),
+                    style: TextStyle(fontSize: 18),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () => global.increment(counter.id),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => global.removeCounter(counter.id),
-                  ),
-                ],
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Edit label
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        final controller = TextEditingController(text: counter.label);
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text("Edit Label"),
+                            content: TextField(controller: controller),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  global.updateLabel(counter.id, controller.text);
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Save"),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    // Change color
+                    PopupMenuButton<Color>(
+                      icon: Icon(Icons.color_lens),
+                      onSelected: (color) => global.updateColor(counter.id, color),
+                      itemBuilder: (_) => Colors.primaries
+                          .map((c) => PopupMenuItem(
+                                value: c,
+                                child: Container(
+                                  width: 50,
+                                  height: 20,
+                                  color: c,
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                    // Decrement
+                    IconButton(
+                      icon: Icon(Icons.remove),
+                      onPressed: () => global.decrement(counter.id),
+                    ),
+                    // Increment
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: () => global.increment(counter.id),
+                    ),
+                    // Delete
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => global.removeCounter(counter.id),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
@@ -66,6 +121,7 @@ class CounterListPage extends StatelessWidget {
             CounterModel(
               id: _uuid.v4(),
               label: "Counter ${global.counters.length + 1}",
+              color: Colors.primaries[global.counters.length % Colors.primaries.length],
             ),
           );
         },

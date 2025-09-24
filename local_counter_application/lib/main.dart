@@ -9,7 +9,7 @@ class MyLocalCounterApp extends StatelessWidget {
       title: 'Local Counter (Part 1)',
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-        appBar: AppBar(title: Text('Local State — Counter')),
+        appBar: AppBar(title: Text('Local State Counter')),
         body: CounterWidget(),
       ),
     );
