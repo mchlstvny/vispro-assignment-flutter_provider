@@ -73,6 +73,7 @@ class CounterListPage extends StatelessWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Edit Label Button
                     IconButton(
                       icon: const Icon(Icons.edit),
                       onPressed: () {
@@ -86,16 +87,49 @@ class CounterListPage extends StatelessWidget {
                             actions: [
                               TextButton(
                                 onPressed: () {
-                                  global.updateLabel(counter.id, controller.text);
-                                  Navigator.pop(context);
+                                  bool success = global.updateLabel(
+                                      counter.id, controller.text);
+                                  if (!success) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => Theme(
+                                        data: Theme.of(context).copyWith(
+                                          dialogBackgroundColor: Colors.yellow[100],
+                                        ),
+                                        child: AlertDialog(
+                                          title: const Text(
+                                            'Invalid Input',
+                                            style: TextStyle(color: Colors.red), 
+                                          ),
+                                          content: const Text(
+                                            'Label cannot be empty',
+                                            style: TextStyle(color: Colors.black87), 
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text('OK', style: TextStyle(color: Colors.blue)),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                    return; 
+                                  }
+                                  Navigator.pop(context); 
                                 },
                                 child: const Text("Save"),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("Cancel"),
                               ),
                             ],
                           ),
                         );
                       },
                     ),
+                    // Change Color Button
                     PopupMenuButton<Color>(
                       icon: const Icon(Icons.color_lens),
                       onSelected: (color) =>
@@ -111,14 +145,17 @@ class CounterListPage extends StatelessWidget {
                               ))
                           .toList(),
                     ),
+                    // Decrement Button
                     IconButton(
                       icon: const Icon(Icons.remove),
                       onPressed: () => global.decrement(counter.id),
                     ),
+                    // Increment Button
                     IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () => global.increment(counter.id),
                     ),
+                    // Delete Button
                     IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () => global.removeCounter(counter.id),
@@ -145,3 +182,4 @@ class CounterListPage extends StatelessWidget {
     );
   }
 }
+

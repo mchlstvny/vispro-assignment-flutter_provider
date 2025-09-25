@@ -28,10 +28,14 @@ class GlobalState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateLabel(String id, String newLabel) {
+  bool updateLabel(String id, String newLabel) {
+    if (newLabel.trim().isEmpty) {
+      return false;
+    }
     final c = _counters.firstWhere((c) => c.id == id);
     c.label = newLabel;
     notifyListeners();
+    return true;
   }
 
   void updateColor(String id, Color newColor) {
